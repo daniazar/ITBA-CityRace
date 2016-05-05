@@ -9,18 +9,19 @@ Properties {
 }
 
 Category {
-	Blend AppSrcAdd AppDstAdd
+	/* Upgrade NOTE: commented out, possibly part of old style per-pixel lighting: Blend AppSrcAdd AppDstAdd */
 
 	Fog { Color [_AddFog] }
 	
 	// ------------------------------------------------------------------
 	// ARB fragment program
 	
-	SubShader {
+	#warning Upgrade NOTE: SubShader commented out; uses Unity 2.x style fixed function per-pixel lighting. Per-pixel lighting is not supported without shaders anymore.
+/*SubShader {
 		// Ambient pass (cutoff)
 		Pass {
 			Name "BASE"
-			Tags {"LightMode" = "PixelOrNone"}
+			Tags {"LightMode" = "Always" /* Upgrade NOTE: changed from PixelOrNone to Always */}
 			Blend Off
 			Cull Off
 			AlphaTest GEqual [_Cutoff]
@@ -33,7 +34,7 @@ Category {
 		Pass {
 			Name "BASEBLEND"
 			Cull Off
-			Tags {"LightMode" = "PixelOrNone"}
+			Tags {"LightMode" = "Always" /* Upgrade NOTE: changed from PixelOrNone to Always */}
 			Blend SrcAlpha OneMinusSrcAlpha
 			AlphaTest Off
 			ZTest Less
@@ -118,7 +119,7 @@ CGPROGRAM
 ENDCG
 		}
 		
-	}
+	}*/
 }
 
 Fallback "Transparent/Cutout/Specular", 0

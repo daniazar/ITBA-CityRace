@@ -10,7 +10,7 @@ public class BuildingBuilder : MonoBehaviour {
 	// nwx = x width
 	// nwz = z width
 	public void Build(int nf, int nwx, int nwz, Vector3 offset, Material mat) {
-		renderer.material = mat;
+		GetComponent<Renderer>().material = mat;
 		
 		tw = nwx * boxSize;
 		th = nf * boxSize;

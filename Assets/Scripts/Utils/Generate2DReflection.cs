@@ -56,7 +56,7 @@ public class Generate2DReflection : MonoBehaviour
 			GameObject go = new GameObject("CubemapCamera", typeof(Camera));
 			go.transform.position = transform.position + Vector3.up * 0.5f;
 			go.transform.LookAt(Camera.main.transform);
-			cam = go.camera;
+			cam = go.GetComponent<Camera>();
 			cam.fieldOfView = 160;
 			cam.nearClipPlane = 0.05f;
 			cam.farClipPlane = 150f;

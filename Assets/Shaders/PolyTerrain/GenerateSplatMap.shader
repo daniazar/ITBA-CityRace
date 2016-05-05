@@ -19,6 +19,8 @@ Shader "PolyTerrain/Splatmap/GenerateSplatMap" {
 			ZTest Always
 			ColorMask RGBA
 			CGPROGRAM
+// Upgrade NOTE: excluded shader from DX11 and Xbox360; has structs without semantics (struct v2f members norm,heightangle)
+#pragma exclude_renderers d3d11 xbox360
 			#pragma vertex vert
 			#pragma fragment frag
 			#pragma fragmentoption ARB_fog_exp2

@@ -1,3 +1,9 @@
+// Upgrade NOTE: replaced 'glstate.matrix.mvp' with 'UNITY_MATRIX_MVP'
+// Upgrade NOTE: replaced 'glstate.matrix.texture[0]' with 'UNITY_MATRIX_TEXTURE0'
+// Upgrade NOTE: replaced 'glstate.matrix.texture[1]' with 'UNITY_MATRIX_TEXTURE1'
+// Upgrade NOTE: replaced 'samplerRECT' with 'sampler2D'
+// Upgrade NOTE: replaced 'texRECT' with 'tex2D'
+
 Shader "Hidden/SSAO" {
 Properties {
 	_MainTex ("", RECT) = "" {}
@@ -8,6 +14,8 @@ Subshader {
 	ZTest Always Cull Off ZWrite Off Fog { Mode Off }
 
 CGINCLUDE
+// Upgrade NOTE: excluded shader from DX11, Xbox360, OpenGL ES 2.0 because it uses unsized arrays
+#pragma exclude_renderers d3d11 xbox360 gles
 // Common Cg code used by several SSAO passes below
 #include "UnityCG.cginc"
 struct v2f_ao {
@@ -22,13 +30,13 @@ float4 _CameraDepthNormalsTexture_ST;
 v2f_ao vert_ao (appdata_img v)
 {
 	v2f_ao o;
-	o.pos = mul (glstate.matrix.mvp, v.vertex);
+	o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
 	o.uv = TRANSFORM_TEX(v.texcoord, _CameraDepthNormalsTexture);
 	o.uvr = v.texcoord.xy * _NoiseScale;
 	return o;
 }
 
-samplerRECT _CameraDepthNormalsTexture;
+sampler2D _CameraDepthNormalsTexture;
 sampler2D _RandomTexture;
 float4 _Params; // x=radius, y=minz, z=attenuation power, w=SSAO power
 
@@ -38,7 +46,7 @@ half frag_ao (v2f_ao i, int sampleCount, float3[] samples)
     half3 randN = tex2D (_RandomTexture, i.uvr).xyz * 2.0 - 1.0;    
     
     // read scene depth/normal
-    float4 depthnormal = texRECT (_CameraDepthNormalsTexture, i.uv);
+    float4 depthnormal = tex2D (_CameraDepthNormalsTexture, i.uv);
     float3 viewNorm;
     float depth;
     DecodeDepthNormal (depthnormal, depth, viewNorm);
@@ -66,7 +74,7 @@ half frag_ao (v2f_ao i, int sampleCount, float3[] samples)
         float sD = depth - (randomDir.z * _Params.x);
 
 		// Sample depth at offset location
-        float4 sampleND = texRECT (_CameraDepthNormalsTexture, i.uv + offset);
+        float4 sampleND = tex2D (_CameraDepthNormalsTexture, i.uv + offset);
         float sampleD;
         float3 sampleN;
         DecodeDepthNormal (sampleND, sampleD, sampleN);
@@ -218,12 +226,12 @@ float4 _MainTex_ST;
 v2f vert (appdata_img v)
 {
 	v2f o;
-	o.pos = mul (glstate.matrix.mvp, v.vertex);
+	o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
 	o.uv = TRANSFORM_TEX (v.texcoord, _CameraDepthNormalsTexture);
 	return o;
 }
 
-samplerRECT _SSAO;
+sampler2D _SSAO;
 float3 _TexelOffsetScale;
 
 inline half CheckSame (half4 n, half4 nn)
@@ -254,25 +262,25 @@ half4 frag( v2f i ) : COLOR
 	
     float2 o = _TexelOffsetScale.xy;
     
-    half sum = texRECT(_SSAO, AO_UV(i.uv)).r * (NUM_BLUR_SAMPLES + 1);
+    half sum = tex2D(_SSAO, AO_UV(i.uv)).r * (NUM_BLUR_SAMPLES + 1);
     half denom = NUM_BLUR_SAMPLES + 1;
     
-    half4 geom = texRECT (_CameraDepthNormalsTexture, i.uv);
+    half4 geom = tex2D (_CameraDepthNormalsTexture, i.uv);
     
     for (int s = 0; s < NUM_BLUR_SAMPLES; ++s)
     {
         float2 nuv = i.uv + o * (s+1);
-        half4 ngeom = texRECT (_CameraDepthNormalsTexture, nuv.xy);
+        half4 ngeom = tex2D (_CameraDepthNormalsTexture, nuv.xy);
         half coef = (NUM_BLUR_SAMPLES - s) * CheckSame (geom, ngeom);
-        sum += texRECT (_SSAO, AO_UV(nuv.xy)).r * coef;
+        sum += tex2D (_SSAO, AO_UV(nuv.xy)).r * coef;
         denom += coef;
     }
     for (int s = 0; s < NUM_BLUR_SAMPLES; ++s)
     {
         float2 nuv = i.uv - o * (s+1);
-        half4 ngeom = texRECT (_CameraDepthNormalsTexture, nuv.xy);
+        half4 ngeom = tex2D (_CameraDepthNormalsTexture, nuv.xy);
         half coef = (NUM_BLUR_SAMPLES - s) * CheckSame (geom, ngeom);
-        sum += texRECT (_SSAO, AO_UV(nuv.xy)).r * coef;
+        sum += tex2D (_SSAO, AO_UV(nuv.xy)).r * coef;
         denom += coef;
     }
     return sum / denom;
@@ -296,19 +304,19 @@ struct v2f {
 v2f vert (appdata_img v)
 {
 	v2f o;
-	o.pos = mul (glstate.matrix.mvp, v.vertex);
-	o.uv[0] = MultiplyUV (glstate.matrix.texture[0], v.texcoord);
-	o.uv[1] = MultiplyUV (glstate.matrix.texture[1], v.texcoord);
+	o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
+	o.uv[0] = MultiplyUV (UNITY_MATRIX_TEXTURE0, v.texcoord);
+	o.uv[1] = MultiplyUV (UNITY_MATRIX_TEXTURE1, v.texcoord);
 	return o;
 }
 
-samplerRECT _MainTex;
-samplerRECT _SSAO;
+sampler2D _MainTex;
+sampler2D _SSAO;
 
 half4 frag( v2f i ) : COLOR
 {
-	half4 c = texRECT (_MainTex, i.uv[0]);
-	half ao = texRECT (_SSAO, i.uv[1]).r;
+	half4 c = tex2D (_MainTex, i.uv[0]);
+	half ao = tex2D (_SSAO, i.uv[1]).r;
 	//c.rgb *= 0.001;
 	//c.rgb += ao.rgb * ao.rgb * ao.rgb;
 	ao = pow (ao, _Params.w);

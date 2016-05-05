@@ -1,3 +1,6 @@
+// Upgrade NOTE: replaced 'samplerRECT' with 'sampler2D'
+// Upgrade NOTE: replaced 'texRECT' with 'tex2D'
+
 // Outputs luminance (grayscale) of the input image _MainTex
 
 Shader "Hidden/Contrast Stretch Luminance" {
@@ -18,11 +21,11 @@ CGPROGRAM
 #pragma fragmentoption ARB_precision_hint_fastest 
 #include "UnityCG.cginc"
 
-uniform samplerRECT _MainTex;
+uniform sampler2D _MainTex;
 
 float4 frag (v2f_img i) : COLOR
 {
-	float4 col = texRECT(_MainTex, i.uv);
+	float4 col = tex2D(_MainTex, i.uv);
 	col.rgb = Luminance(col.rgb) * (1+col.a*2);
 	return col;
 }

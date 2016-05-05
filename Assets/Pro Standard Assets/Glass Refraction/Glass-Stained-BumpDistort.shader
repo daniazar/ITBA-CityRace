@@ -1,3 +1,6 @@
+// Upgrade NOTE: replaced 'samplerRECT' with 'sampler2D'
+// Upgrade NOTE: replaced 'texRECTproj' with 'tex2Dproj'
+
 // Per pixel bumped refraction.
 // Uses a normal map to distort the image behind, and
 // an additional texture to tint the color.
@@ -37,7 +40,7 @@ CGPROGRAM
 #pragma fragmentoption ARB_precision_hint_fastest 
 #pragma fragmentoption ARB_fog_exp2
 
-samplerRECT _GrabTexture : register(s0);
+sampler2D _GrabTexture : register(s0);
 float4 _GrabTexture_TexelSize;
 sampler2D _BumpMap : register(s1);
 sampler2D _MainTex : register(s2);
@@ -60,7 +63,7 @@ half4 frag( v2f i ) : COLOR
 	#endif
 	i.uvgrab.xy = offset * i.uvgrab.z + i.uvgrab.xy;
 	
-	half4 col = texRECTproj( _GrabTexture, i.uvgrab.xyw );
+	half4 col = tex2Dproj( _GrabTexture, i.uvgrab.xyw );
 	half4 tint = tex2D( _MainTex, i.uvmain );
 	
 	return col * tint;
@@ -77,7 +80,8 @@ ENDCG
 	// ------------------------------------------------------------------
 	//  Radeon 9000
 	
-	SubShader {
+	#warning Upgrade NOTE: SubShader commented out because of manual shader assembly
+/*SubShader {
 
 		GrabPass {							
 			Name "BASE"
@@ -115,7 +119,7 @@ EndPass;
 			SetTexture [_BumpMap] {}
 			SetTexture [_MainTex] {}
 		}
-	}
+	}*/
 	
 	// ------------------------------------------------------------------
 	// Fallback for older cards and Unity non-Pro

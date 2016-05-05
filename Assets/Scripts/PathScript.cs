@@ -21,8 +21,8 @@ public class PathScript : MonoBehaviour
 		pathMesh.name = "Path";
 		pathMesh.AddComponent(typeof(MeshFilter));
 		pathMesh.AddComponent(typeof(MeshRenderer));
-		pathMesh.AddComponent("AttachedPathScript");
-		pathMesh.renderer.material = PathMaterial;
+		pathMesh.AddComponent<AttachedPathScript>();
+		pathMesh.GetComponent<Renderer>().material = PathMaterial;
 		AttachedPathScript APS = (AttachedPathScript)pathMesh.GetComponent("AttachedPathScript");
 		APS.pathMesh = pathMesh;
 		

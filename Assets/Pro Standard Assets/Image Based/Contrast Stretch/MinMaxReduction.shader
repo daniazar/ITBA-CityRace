@@ -1,3 +1,8 @@
+// Upgrade NOTE: replaced 'glstate.matrix.mvp' with 'UNITY_MATRIX_MVP'
+// Upgrade NOTE: replaced 'glstate.matrix.texture[0]' with 'UNITY_MATRIX_TEXTURE0'
+// Upgrade NOTE: replaced 'samplerRECT' with 'sampler2D'
+// Upgrade NOTE: replaced 'texRECT' with 'tex2D'
+
 // Reduces input image (_MainTex) by 2x2.
 // Outputs maximum value in R, minimum in G.
 Shader "Hidden/Contrast Stretch Reduction" {
@@ -23,12 +28,12 @@ struct v2f {
 	float2 uv[4]    : TEXCOORD0;
 }; 
 
-uniform samplerRECT _MainTex;
+uniform sampler2D _MainTex;
 
 v2f vert (appdata_img v) {
 	v2f o;
-	o.position = mul (glstate.matrix.mvp, v.vertex);
-	float2 uv = MultiplyUV (glstate.matrix.texture[0], v.texcoord);
+	o.position = mul (UNITY_MATRIX_MVP, v.vertex);
+	float2 uv = MultiplyUV (UNITY_MATRIX_TEXTURE0, v.texcoord);
 	
 	// Compute UVs to sample 2x2 pixel block.
 	o.uv[0] = uv + float2(0,0);
@@ -41,10 +46,10 @@ v2f vert (appdata_img v) {
 float4 frag (v2f i) : COLOR
 {
 	// Sample pixel block
-	float4 v00 = texRECT(_MainTex, i.uv[0]);
-	float2 v01 = texRECT(_MainTex, i.uv[1]).xy;
-	float2 v10 = texRECT(_MainTex, i.uv[2]).xy;
-	float2 v11 = texRECT(_MainTex, i.uv[3]).xy;
+	float4 v00 = tex2D(_MainTex, i.uv[0]);
+	float2 v01 = tex2D(_MainTex, i.uv[1]).xy;
+	float2 v10 = tex2D(_MainTex, i.uv[2]).xy;
+	float2 v11 = tex2D(_MainTex, i.uv[3]).xy;
 	
 	float4 res;
 	// output x: maximum of the four values

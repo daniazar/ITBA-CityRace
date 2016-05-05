@@ -1,4 +1,16 @@
+// Upgrade NOTE: replaced 'PositionFog()' with multiply of UNITY_MATRIX_MVP by position
+// Upgrade NOTE: replaced 'V2F_POS_FOG' with 'float4 pos : SV_POSITION'
+// Upgrade NOTE: replaced '_PPLAmbient' with 'UNITY_LIGHTMODEL_AMBIENT'
+// Upgrade NOTE: replaced 'glstate.light[i].attenuation' with 'unity_LightAtten[i]'
+// Upgrade NOTE: replaced 'glstate.light[i].diffuse' with 'unity_LightColor[i]'
+// Upgrade NOTE: replaced 'glstate.light[i].position' with 'unity_LightPosition[i]'
+// Upgrade NOTE: replaced 'glstate.lightmodel.ambient' with 'UNITY_LIGHTMODEL_AMBIENT'
+// Upgrade NOTE: replaced 'glstate.matrix.modelview[0]' with 'UNITY_MATRIX_MV'
+// Upgrade NOTE: replaced 'glstate.matrix.transpose.modelview[0]' with 'UNITY_MATRIX_T_MV'
+
 #include "UnityCG.cginc"
+// Upgrade NOTE: excluded shader from DX11 and Xbox360; has structs without semantics (struct v2f_pixel members normal,lightDirFade,uv)
+#pragma exclude_renderers d3d11 xbox360
 
 struct appdata_lightmap {
     float4 vertex : POSITION;
@@ -8,12 +20,12 @@ struct appdata_lightmap {
 };
 
 struct v2f_ambient {
-	V2F_POS_FOG;
+	float4 pos : SV_POSITION;
 	float4 uv[3] : TEXCOORD0;
 	float fade : TEXCOORD3;
 };
 struct v2f_vertex {
-	V2F_POS_FOG;
+	float4 pos : SV_POSITION;
 	float4 uv[3] : TEXCOORD0;
 	float4 color : COLOR;
 	#ifdef USE_LIGHTMAP
@@ -23,7 +35,7 @@ struct v2f_vertex {
 
 #ifdef INCLUDE_PIXEL
 struct v2f_pixel {
-	V2F_POS_FOG;
+	float4 pos : SV_POSITION;
 	LIGHTING_COORDS
 	float3 normal;
 	float4 lightDirFade;
@@ -44,18 +56,18 @@ uniform float4 _RealtimeFade;
 
 float4 CalculateVertexLights (float3 viewPos, float3 objSpaceNormal)
 {
-	float3 normal = mul (objSpaceNormal, (float3x3)glstate.matrix.transpose.modelview[0]);
+	float3 normal = mul (objSpaceNormal, (float3x3)UNITY_MATRIX_T_MV);
 	
 	// Do vertex light calculation: up to four lights,
 	// treat spot lights as point lights.
 	// TODO: optimize/vectorize me!
-	float4 lightColor = glstate.lightmodel.ambient;
+	float4 lightColor = UNITY_LIGHTMODEL_AMBIENT;
 	for (int i = 0; i < 4; i++) {
-		float3 toLight = glstate.light[i].position.xyz - viewPos.xyz * glstate.light[i].position.w;
+		float3 toLight = unity_LightPosition[i].xyz - viewPos.xyz * unity_LightPosition[i].w;
 		float lengthSq = dot(toLight, toLight);
-		float atten = 1.0 / (1.0 + lengthSq * glstate.light[i].attenuation.z);
+		float atten = 1.0 / (1.0 + lengthSq * unity_LightAtten[i].z);
 		float lightAmt = max( 0, dot (normal, normalize(toLight)) * atten );
-		lightColor += glstate.light[i].diffuse * lightAmt;
+		lightColor += unity_LightColor[i] * lightAmt;
 	}
 
 	return lightColor;
@@ -92,9 +104,9 @@ float4 VertexlitSplatFragment (v2f_vertex i) : COLOR {
 
 v2f_vertex VertexlitSplatVertex (appdata_lightmap v) {
 	v2f_vertex o;
-	PositionFog( v.vertex, o.pos, o.fog );
+	o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
 	
-	float3 viewpos = mul(glstate.matrix.modelview[0], v.vertex).xyz;
+	float3 viewpos = mul(UNITY_MATRIX_MV, v.vertex).xyz;
 	o.color = CalculateVertexLights (viewpos, v.normal);
 	CALC_SPLAT_UV(v.texcoord.xy, v.texcoord1.xy);
 	
@@ -111,7 +123,7 @@ float4 AmbientSplatFragment (v2f_ambient i) : COLOR {
 	SAMPLE_SPLAT(i,splat);
 	
 	half4 lightcolor = tex2D (_LightMap, i.uv[0].zw);	
-	lightcolor = lerp( _PPLAmbient, lightcolor, saturate(i.fade) );
+	lightcolor = lerp( UNITY_LIGHTMODEL_AMBIENT, lightcolor, saturate(i.fade) );
 
 	half4 col = splat * lightcolor;	
 	col *= float4 (2,2,2,0);
@@ -121,7 +133,7 @@ float4 AmbientSplatFragment (v2f_ambient i) : COLOR {
 
 v2f_ambient AmbientSplatVertex (appdata_lightmap v) {
 	v2f_ambient o;
-	PositionFog( v.vertex, o.pos, o.fog );
+	o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
 	
 	CALC_SPLAT_UV(v.texcoord.xy, v.texcoord1.xy);
 	
@@ -142,7 +154,7 @@ float4 PixellitSplatFragment (v2f_pixel i) : COLOR {
 
 v2f_pixel PixellitSplatVertex (appdata_lightmap v) {
 	v2f_pixel o;
-	PositionFog( v.vertex, o.pos, o.fog );
+	o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
 	CALC_SPLAT_UV(v.texcoord.xy, v.texcoord1.xy);
 	o.normal = v.normal;
 	o.lightDirFade.xyz = ObjSpaceLightDir( v.vertex );
@@ -164,7 +176,7 @@ float4 LightmapSplatFragment (v2f_vertex i) : COLOR {
 
 v2f_vertex LightmapSplatVertex (appdata_lightmap v) {
 	v2f_vertex o;
-	PositionFog( v.vertex, o.pos, o.fog );
+	o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
 	
 	CALC_SPLAT_UV(v.texcoord.xy, v.texcoord1.xy);
 

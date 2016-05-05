@@ -18,19 +18,20 @@ Properties {
 	_BaseMap ("BaseMap (RGB)", 2D) = "white" {}
 }
 	
-SubShader {		
+#warning Upgrade NOTE: SubShader commented out; uses Unity 2.x style fixed function per-pixel lighting. Per-pixel lighting is not supported without shaders anymore.
+/*SubShader {		
 	Tags {
 		"SplatCount" = "4"
 		"Queue" = "Geometry-100"
 		"RenderType" = "Opaque"
 	}
 	
-	Blend AppSrcAdd AppDstAdd
+	/* Upgrade NOTE: commented out, possibly part of old style per-pixel lighting: Blend AppSrcAdd AppDstAdd */
 	Fog { Color [_AddFog] }
 	
 	// Ambient pass
 	Pass {
-		Tags { "LightMode" = "PixelOrNone" }
+		Tags { "LightMode" = "Always" /* Upgrade NOTE: changed from PixelOrNone to Always */ }
 		
 		CGPROGRAM
 		#pragma vertex AmbientSplatVertex
@@ -74,7 +75,7 @@ SubShader {
 	}
 	
 	UsePass "VertexLit/SHADOWCOLLECTOR"
-}
+}*/
  	
 // Fallback to Lightmap
 Fallback "PolyTerrain/Splatmap/Lightmap-FirstPass"

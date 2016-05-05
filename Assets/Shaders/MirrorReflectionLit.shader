@@ -8,7 +8,7 @@ Properties {
 }
 
 Category {
-	Blend AppSrcAdd AppDstAdd
+	/* Upgrade NOTE: commented out, possibly part of old style per-pixel lighting: Blend AppSrcAdd AppDstAdd */
 	Fog { Color [_AddFog] }
 
 	// ------------------------------------------------------------------

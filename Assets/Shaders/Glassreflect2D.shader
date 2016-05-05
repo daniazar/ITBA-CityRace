@@ -1,3 +1,6 @@
+// Upgrade NOTE: replaced 'PositionFog()' with multiply of UNITY_MATRIX_MVP by position
+// Upgrade NOTE: replaced 'V2F_POS_FOG' with 'float4 pos : SV_POSITION'
+
 Shader "Car/Glassreflect2D" {
 Properties {
 	_MainTex ("Base (RGB reflection)", 2D) = "black" {}
@@ -22,6 +25,8 @@ Category {
 		Pass {
 			
 CGPROGRAM
+// Upgrade NOTE: excluded shader from DX11 and Xbox360; has structs without semantics (struct v2f members uv,viewDir,TtoW0,TtoW1,TtoW2)
+#pragma exclude_renderers d3d11 xbox360
 #pragma vertex vert
 #pragma fragment frag
 #pragma fragmentoption ARB_fog_exp2
@@ -29,7 +34,7 @@ CGPROGRAM
 #include "UnityCG.cginc"
 
 struct v2f {
-	V2F_POS_FOG;
+	float4 pos : SV_POSITION;
 	float2  uv[3];
 	float3	viewDir;
 	float3 TtoW0;
@@ -44,7 +49,7 @@ uniform matrix _LightmapMatrix;
 v2f vert (appdata_tan v)
 {	
 	v2f o;
-	PositionFog( v.vertex, o.pos, o.fog );
+	o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
 	o.uv[0] = TRANSFORM_TEX(v.texcoord, _MainTex);
 	o.uv[1] = TRANSFORM_TEX( v.texcoord, _BumpMap );
 	o.uv[2] = mul(_LightmapMatrix, v.vertex).xy;

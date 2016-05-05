@@ -1,3 +1,8 @@
+// Upgrade NOTE: replaced 'glstate.matrix.mvp' with 'UNITY_MATRIX_MVP'
+// Upgrade NOTE: replaced 'glstate.matrix.texture[0]' with 'UNITY_MATRIX_TEXTURE0'
+// Upgrade NOTE: replaced 'samplerRECT' with 'sampler2D'
+// Upgrade NOTE: replaced 'texRECT' with 'tex2D'
+
 Shader "Hidden/Edge Detect X" {
 Properties {
 	_MainTex ("Base (RGB)", RECT) = "white" {}
@@ -15,7 +20,7 @@ CGPROGRAM
 #pragma fragmentoption ARB_precision_hint_fastest 
 #include "UnityCG.cginc"
 
-uniform samplerRECT _MainTex;
+uniform sampler2D _MainTex;
 uniform float4 _MainTex_TexelSize;
 uniform float _Treshold;
 
@@ -27,8 +32,8 @@ struct v2f {
 v2f vert( appdata_img v )
 {
 	v2f o;
-	o.pos = mul (glstate.matrix.mvp, v.vertex);
-	float2 uv = MultiplyUV( glstate.matrix.texture[0], v.texcoord );
+	o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
+	float2 uv = MultiplyUV( UNITY_MATRIX_TEXTURE0, v.texcoord );
 	o.uv[0] = uv;
 	o.uv[1] = uv + float2(-_MainTex_TexelSize.x, -_MainTex_TexelSize.y);
 	o.uv[2] = uv + float2(+_MainTex_TexelSize.x, -_MainTex_TexelSize.y);
@@ -38,12 +43,12 @@ v2f vert( appdata_img v )
 
 half4 frag (v2f i) : COLOR
 {
-	half4 original = texRECT(_MainTex, i.uv[0]);
+	half4 original = tex2D(_MainTex, i.uv[0]);
 
 	// a very simple cross gradient filter
 	half3 p1 = original.rgb;
-	half3 p2 = texRECT( _MainTex, i.uv[1] ).rgb;
-	half3 p3 = texRECT( _MainTex, i.uv[2] ).rgb;
+	half3 p2 = tex2D( _MainTex, i.uv[1] ).rgb;
+	half3 p3 = tex2D( _MainTex, i.uv[2] ).rgb;
 	
 	half3 diff = p1 * 2 - p2 - p3;
 	half len = dot(diff,diff);

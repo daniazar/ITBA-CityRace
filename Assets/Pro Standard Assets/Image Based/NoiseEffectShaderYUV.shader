@@ -1,3 +1,8 @@
+// Upgrade NOTE: replaced 'glstate.matrix.mvp' with 'UNITY_MATRIX_MVP'
+// Upgrade NOTE: replaced 'glstate.matrix.texture[0]' with 'UNITY_MATRIX_TEXTURE0'
+// Upgrade NOTE: replaced 'samplerRECT' with 'sampler2D'
+// Upgrade NOTE: replaced 'texRECT' with 'tex2D'
+
 Shader "Hidden/Noise Shader YUV" {
 Properties {
 	_MainTex ("Base (RGB)", RECT) = "white" {}
@@ -23,7 +28,7 @@ struct v2f {
 	float2 uvs	: TEXCOORD2; // scratch
 }; 
 
-uniform samplerRECT _MainTex;
+uniform sampler2D _MainTex;
 uniform sampler2D _GrainTex;
 uniform sampler2D _ScratchTex;
 
@@ -34,8 +39,8 @@ uniform float4 _Intensity; // x=grain, y=scratch
 v2f vert (appdata_img v)
 {
 	v2f o;
-	o.pos = mul (glstate.matrix.mvp, v.vertex);
-	o.uv = MultiplyUV (glstate.matrix.texture[0], v.texcoord);
+	o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
+	o.uv = MultiplyUV (UNITY_MATRIX_TEXTURE0, v.texcoord);
 	o.uvg = v.texcoord.xy * _GrainOffsetScale.zw + _GrainOffsetScale.xy;
 	o.uvs = v.texcoord.xy * _ScratchOffsetScale.zw + _ScratchOffsetScale.xy;
 	return o;
@@ -43,7 +48,7 @@ v2f vert (appdata_img v)
 
 half4 frag (v2f i) : COLOR
 {
-	half4 col = texRECT(_MainTex, i.uv);
+	half4 col = tex2D(_MainTex, i.uv);
 	
 	// convert to YUV
 	half3 yuv;

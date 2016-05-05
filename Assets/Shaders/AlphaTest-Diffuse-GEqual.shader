@@ -1,3 +1,6 @@
+// Upgrade NOTE: replaced 'PositionFog()' with multiply of UNITY_MATRIX_MVP by position
+// Upgrade NOTE: replaced 'V2F_POS_FOG' with 'float4 pos : SV_POSITION'
+
 Shader "Transparent/Cutout/Diffuse - GEqual" {
 Properties {
 	_Color ("Main Color", Color) = (1,1,1,1)
@@ -11,16 +14,17 @@ Category {
 	AlphaToMask True
 	ColorMask RGB
 	Fog { Color [_AddFog] }
-	Blend AppSrcAdd AppDstAdd
+	/* Upgrade NOTE: commented out, possibly part of old style per-pixel lighting: Blend AppSrcAdd AppDstAdd */
 	
 	// ------------------------------------------------------------------
 	// ARB fragment program
 	
-	SubShader {
+	#warning Upgrade NOTE: SubShader commented out; uses Unity 2.x per-pixel lighting. You should rewrite shader into a Surface Shader.
+/*SubShader {
 		// Ambient pass
 		Pass {
 			Name "BASE"
-			Tags {"LightMode" = "PixelOrNone"}
+			Tags {"LightMode" = "Always" /* Upgrade NOTE: changed from PixelOrNone to Always */}
 			Color [_PPLAmbient]
 			SetTexture [_MainTex] {constantColor [_Color] Combine texture * primary DOUBLE, texture * primary}
 		}
@@ -41,6 +45,8 @@ Category {
 			Tags { "LightMode" = "Pixel" }
 
 CGPROGRAM
+// Upgrade NOTE: excluded shader from DX11 and Xbox360; has structs without semantics (struct v2f members uv,normal,lightDir)
+#pragma exclude_renderers d3d11 xbox360
 #pragma fragment frag
 #pragma vertex vert
 #pragma multi_compile_builtin
@@ -50,7 +56,7 @@ CGPROGRAM
 #include "AutoLight.cginc"
 
 struct v2f {
-	V2F_POS_FOG;
+	float4 pos : SV_POSITION;
 	LIGHTING_COORDS
 	float2	uv;
 	float3	normal;
@@ -62,7 +68,7 @@ uniform float4 _MainTex_ST;
 v2f vert (appdata_base v)
 {
 	v2f o;
-	PositionFog( v.vertex, o.pos, o.fog );
+	o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
 	o.normal = v.normal;
 	o.uv = TRANSFORM_TEX(v.texcoord,_MainTex);
 	o.lightDir = ObjSpaceLightDir( v.vertex );
@@ -86,16 +92,17 @@ ENDCG
 			SetTexture [_LightTexture0] {combine texture}
 			SetTexture [_LightTextureB0] {combine texture}
 		}
-	}
+	}*/
 	
  	// ------------------------------------------------------------------
 	// Radeon 9000
 
-	SubShader {
+	#warning Upgrade NOTE: SubShader commented out because of manual shader assembly
+/*SubShader {
 		// Ambient pass
 		Pass {
 			Name "BASE"
-			Tags {"LightMode" = "PixelOrNone"}
+			Tags {"LightMode" = "Always" /* Upgrade NOTE: changed from PixelOrNone to Always */}
 			Color [_PPLAmbient]
 			SetTexture [_MainTex] {constantColor [_Color] Combine texture * primary DOUBLE, texture * constant}
 		}
@@ -124,7 +131,7 @@ CGPROGRAM
 #include "UnityCG.cginc"
 
 struct v2f {
-	V2F_POS_FOG;
+	float4 pos : SV_POSITION;
 	float2 uv		: TEXCOORD0;
 	float3 normal	: TEXCOORD1;
 	float3 lightDir	: TEXCOORD2;
@@ -135,7 +142,7 @@ uniform float4 _MainTex_ST;
 v2f vert(appdata_base v)
 {
 	v2f o;
-	PositionFog( v.vertex, o.pos, o.fog );
+	o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
 	o.normal = v.normal;
 	o.uv = TRANSFORM_TEX(v.texcoord,_MainTex);
 	o.lightDir = ObjSpaceLightDir( v.vertex );
@@ -187,7 +194,7 @@ uniform float4 _MainTex_ST;
 uniform float4x4 _SpotlightProjectionMatrix0;
 
 struct v2f {
-	V2F_POS_FOG;
+	float4 pos : SV_POSITION;
 	float2 uv		: TEXCOORD0;
 	float3 normal	: TEXCOORD1;
 	float3 lightDir	: TEXCOORD2;
@@ -197,7 +204,7 @@ struct v2f {
 v2f vert(appdata_tan v)
 {
 	v2f o;
-	PositionFog( v.vertex, o.pos, o.fog );
+	o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
 	o.normal = v.normal;
 	o.uv = TRANSFORM_TEX(v.texcoord,_MainTex);
 	o.lightDir = ObjSpaceLightDir( v.vertex );
@@ -255,7 +262,7 @@ uniform float4x4 _SpotlightProjectionMatrix0;
 uniform float4x4 _SpotlightProjectionMatrixB0;
 
 struct v2f {
-	V2F_POS_FOG;
+	float4 pos : SV_POSITION;
 	float2 uv		: TEXCOORD0;
 	float3 normal	: TEXCOORD1;
 	float3 lightDir	: TEXCOORD2;
@@ -266,7 +273,7 @@ struct v2f {
 v2f vert(appdata_tan v)
 {
 	v2f o;
-	PositionFog( v.vertex, o.pos, o.fog );
+	o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
 	o.normal = v.normal;
 	o.uv = TRANSFORM_TEX(v.texcoord,_MainTex);
 	o.lightDir = ObjSpaceLightDir( v.vertex );
@@ -311,7 +318,7 @@ EndPass;
 			SetTexture[_LightTexture0] {combine texture}
 			SetTexture[_LightTextureB0] {combine texture}
 		}
-	}
+	}*/
 	
 	// ------------------------------------------------------------------
 	// Radeon 7000
@@ -322,10 +329,11 @@ EndPass;
 			Emission [_PPLAmbient]
 		}
 		Lighting On
-		SubShader {
+		#warning Upgrade NOTE: SubShader commented out; uses Unity 2.x style fixed function per-pixel lighting. Per-pixel lighting is not supported without shaders anymore.
+/*SubShader {
 			Pass {
 				Name "BASE"
-				Tags {"LightMode" = "PixelOrNone"}
+				Tags {"LightMode" = "Always" /* Upgrade NOTE: changed from PixelOrNone to Always */}
 				Color [_PPLAmbient]
 				Lighting Off
 				SetTexture [_MainTex] {Combine texture * primary DOUBLE}
@@ -370,7 +378,7 @@ EndPass;
 				}
 				SetTexture [_MainTex] 	{ combine previous * texture DOUBLE, primary * texture}
 			}
-		}
+		}*/
 	}
 }
 

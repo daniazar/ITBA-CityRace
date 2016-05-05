@@ -1,4 +1,9 @@
+// Upgrade NOTE: replaced 'PositionFog()' with multiply of UNITY_MATRIX_MVP by position
+// Upgrade NOTE: replaced 'V2F_POS_FOG' with 'float4 pos : SV_POSITION'
 
+
+// Upgrade NOTE: excluded shader from DX11 and Xbox360; has structs without semantics (struct v2f_alpha_pixel_spec members uvK,uv2,normal,viewDirT,lightDirT)
+#pragma exclude_renderers d3d11 xbox360
 #include "UnityCG.cginc"
 #include "AutoLight.cginc" 
 
@@ -82,7 +87,7 @@ half4 vertex_frag_glow (v2f_alpha_vertex_lit_glow i) : COLOR {
 #ifdef PIXEL_PASS_SPECULAR
 
 struct v2f_alpha_pixel_spec {
-	V2F_POS_FOG;
+	float4 pos : SV_POSITION;
 	LIGHTING_COORDS
 	float3	uvK; // xy = UV, z = specular K
 	float2	uv2;
@@ -98,7 +103,7 @@ uniform float _Shininess;
 v2f_alpha_pixel_spec vert_pixel_specular (appdata_tan v)
 {	
 	v2f_alpha_pixel_spec o;
-	PositionFog( v.vertex, o.pos, o.fog );
+	o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
 	o.uvK.xy = TRANSFORM_TEX(v.texcoord, _MainTex);
 	o.uvK.z = _Shininess * 128;
 	o.uv2 = TRANSFORM_TEX(v.texcoord, _SpecMap);
@@ -126,7 +131,7 @@ float4 frag_pixel_specular (v2f_alpha_pixel_spec i) : COLOR
 #ifdef PIXEL_PASS_SPECULAR_GLOW
 
 struct v2f_alpha_pixel_spec_glow {
-	V2F_POS_FOG;
+	float4 pos : SV_POSITION;
 	LIGHTING_COORDS
 	float2 uvK; //float3	uvK; // xy = UV, z = specular K
 	float2	uv2;
@@ -142,7 +147,7 @@ uniform float _Shininess;
 v2f_alpha_pixel_spec_glow vert_pixel_specular_glow (appdata_tan v)
 {	
 	v2f_alpha_pixel_spec_glow o;
-	PositionFog( v.vertex, o.pos, o.fog );
+	o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
 	o.uvK.xy = TRANSFORM_TEX(v.texcoord, _MainTex);
 //	o.uvK.z = _Shininess * 128;
 	o.uv2 = TRANSFORM_TEX(v.texcoord, _SpecMap);

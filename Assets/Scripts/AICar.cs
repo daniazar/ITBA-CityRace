@@ -82,7 +82,7 @@ public class AICar : MonoBehaviour {
 	}
 
 	void  Update (){		
-		Vector3 relativeVelocity = transform.InverseTransformDirection(rigidbody.velocity);
+		Vector3 relativeVelocity = transform.InverseTransformDirection(GetComponent<Rigidbody>().velocity);
 		
 		GetInput();
 		
@@ -95,7 +95,7 @@ public class AICar : MonoBehaviour {
 
 	void  FixedUpdate (){	
 		// The rigidbody velocity is always given in world space, but in order to work in local space of the car model we need to transform it first.
-		Vector3 relativeVelocity = transform.InverseTransformDirection(rigidbody.velocity);
+		Vector3 relativeVelocity = transform.InverseTransformDirection(GetComponent<Rigidbody>().velocity);
 		CalculateState();	
 		
 		UpdateFriction(relativeVelocity);
@@ -164,7 +164,7 @@ public class AICar : MonoBehaviour {
 		wheel.wheelGraphic = wheelTransform;
 		wheel.tireGraphic = wheelTransform.GetComponentsInChildren<Transform>()[1];
 		
-		wheelRadius = wheel.tireGraphic.renderer.bounds.size.y / 2;	
+		wheelRadius = wheel.tireGraphic.GetComponent<Renderer>().bounds.size.y / 2;	
 		wheel.collider.radius = wheelRadius;
 		
 		if (isFrontWheel)
@@ -185,7 +185,7 @@ public class AICar : MonoBehaviour {
 
 	void  SetupCenterOfMass (){
 		if(centerOfMass != null)
-			rigidbody.centerOfMass = centerOfMass.localPosition;
+			GetComponent<Rigidbody>().centerOfMass = centerOfMass.localPosition;
 	}
 
 	void  SetupGears (){
@@ -334,8 +334,8 @@ public class AICar : MonoBehaviour {
 	void  FlipCar (){
 		transform.rotation = Quaternion.LookRotation(transform.forward);
 		transform.position += Vector3.up * 0.5f;
-		rigidbody.velocity = Vector3.zero;
-		rigidbody.angularVelocity = Vector3.zero;
+		GetComponent<Rigidbody>().velocity = Vector3.zero;
+		GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
 		resetTimer = 0;
 		currentEnginePower = 0;
 	}
@@ -354,7 +354,7 @@ public class AICar : MonoBehaviour {
 			if(wheel.GetGroundHit(out wh))
 			{
 				w.wheelGraphic.localPosition = wheel.transform.up * (wheelRadius + wheel.transform.InverseTransformPoint(wh.point).y);
-				w.wheelVelo = rigidbody.GetPointVelocity(wh.point);
+				w.wheelVelo = GetComponent<Rigidbody>().GetPointVelocity(wh.point);
 				w.groundSpeed = w.wheelGraphic.InverseTransformDirection(w.wheelVelo);
 				
 				// Code to handle skidmark drawing. Not covered in the tutorial
@@ -396,7 +396,7 @@ public class AICar : MonoBehaviour {
 							w.lastEmitPosition = wh.point;
 							w.lastEmitTime = Time.time;
 						
-							w.lastSkidmark = skidmarks.AddSkidMark(wh.point + rigidbody.velocity * dt, wh.normal, (skidGroundSpeed * 0.1f + handbrakeSkidding) * Mathf.Clamp01(wh.force / wheel.suspensionSpring.spring), w.lastSkidmark);
+							w.lastSkidmark = skidmarks.AddSkidMark(wh.point + GetComponent<Rigidbody>().velocity * dt, wh.normal, (skidGroundSpeed * 0.1f + handbrakeSkidding) * Mathf.Clamp01(wh.force / wheel.suspensionSpring.spring), w.lastSkidmark);
 							sound.Skid(true, Mathf.Clamp01(skidGroundSpeed * 0.1f));
 						}
 						else
@@ -465,8 +465,8 @@ public class AICar : MonoBehaviour {
 		if(initialDragMultiplierX > dragMultiplier.x) // Handbrake code
 		{			
 			drag.x /= (relativeVelocity.magnitude / (topSpeed / ( 1 + 2 * handbrakeXDragFactor ) ) );
-			drag.z *= (1 + Mathf.Abs(Vector3.Dot(rigidbody.velocity.normalized, transform.forward)));
-			drag += rigidbody.velocity * Mathf.Clamp01(rigidbody.velocity.magnitude / topSpeed);
+			drag.z *= (1 + Mathf.Abs(Vector3.Dot(GetComponent<Rigidbody>().velocity.normalized, transform.forward)));
+			drag += GetComponent<Rigidbody>().velocity * Mathf.Clamp01(GetComponent<Rigidbody>().velocity.magnitude / topSpeed);
 		}
 		else // No handbrake
 		{
@@ -477,7 +477,7 @@ public class AICar : MonoBehaviour {
 			drag.x = -relativeVelocity.x * dragMultiplier.x;
 			
 
-		rigidbody.AddForce(transform.TransformDirection(drag) * rigidbody.mass * Time.deltaTime);
+		GetComponent<Rigidbody>().AddForce(transform.TransformDirection(drag) * GetComponent<Rigidbody>().mass * Time.deltaTime);
 	}
 
 	void  UpdateFriction ( Vector3 relativeVelocity  ){
@@ -540,11 +540,11 @@ public class AICar : MonoBehaviour {
 			if (HaveTheSameSign(relativeVelocity.z, throttle))
 			{
 				if (!handbrake)
-					throttleForce = Mathf.Sign(throttle) * currentEnginePower * rigidbody.mass;
+					throttleForce = Mathf.Sign(throttle) * currentEnginePower * GetComponent<Rigidbody>().mass;
 			}
 			else
-				brakeForce = Mathf.Sign(throttle) * engineForceValues[0] * rigidbody.mass;
-			rigidbody.AddForce(transform.forward * Time.deltaTime * (throttleForce + brakeForce));
+				brakeForce = Mathf.Sign(throttle) * engineForceValues[0] * GetComponent<Rigidbody>().mass;
+			GetComponent<Rigidbody>().AddForce(transform.forward * Time.deltaTime * (throttleForce + brakeForce));
 		}
 	}
 
@@ -552,7 +552,7 @@ public class AICar : MonoBehaviour {
 		if(canSteer)
 		{
 			float turnRadius = 3.0f / Mathf.Sin((90 - (steer * 30)) * Mathf.Deg2Rad);
-			float minMaxTurn = EvaluateSpeedToTurn(rigidbody.velocity.magnitude);
+			float minMaxTurn = EvaluateSpeedToTurn(GetComponent<Rigidbody>().velocity.magnitude);
 			float turnSpeed = Mathf.Clamp(relativeVelocity.z / turnRadius, -minMaxTurn / 10, minMaxTurn / 10);
 			
 			transform.RotateAround(	transform.position + transform.right * turnRadius * steer, 
@@ -569,15 +569,15 @@ public class AICar : MonoBehaviour {
 				float rotationDirection = Mathf.Sign(steer); // rotationDirection is -1 or 1 by default, depending on steering
 				if(steer == 0)
 				{
-					if(rigidbody.angularVelocity.y < 1) // If we are not steering and we are handbraking and not rotating fast, we apply a random rotationDirection
+					if(GetComponent<Rigidbody>().angularVelocity.y < 1) // If we are not steering and we are handbraking and not rotating fast, we apply a random rotationDirection
 						rotationDirection = Random.Range(-1.0f, 1.0f);
 					else
-						rotationDirection = rigidbody.angularVelocity.y; // If we are rotating fast we are applying that rotation to the car
+						rotationDirection = GetComponent<Rigidbody>().angularVelocity.y; // If we are rotating fast we are applying that rotation to the car
 				}
 				// -- Finally we apply this rotation around a point between the cars front wheels.
 				transform.RotateAround( transform.TransformPoint( (	frontWheels[0].localPosition + frontWheels[1].localPosition) * 0.5f), 
 																	transform.up, 
-																	rigidbody.velocity.magnitude * Mathf.Clamp01(1 - rigidbody.velocity.magnitude / topSpeed) * rotationDirection * Time.deltaTime * 2);
+																	GetComponent<Rigidbody>().velocity.magnitude * Mathf.Clamp01(1 - GetComponent<Rigidbody>().velocity.magnitude / topSpeed) * rotationDirection * Time.deltaTime * 2);
 			}
 		}
 	}
@@ -617,7 +617,7 @@ public class AICar : MonoBehaviour {
 	}
 
 	float  GetGearState (){
-		Vector3 relativeVelocity = transform.InverseTransformDirection(rigidbody.velocity);
+		Vector3 relativeVelocity = transform.InverseTransformDirection(GetComponent<Rigidbody>().velocity);
 		float lowLimit = (currentGear == 0 ? 0 : gearSpeeds[currentGear-1]);
 		return (relativeVelocity.z - lowLimit) / (gearSpeeds[(int)(currentGear - lowLimit)]) * (1 - currentGear * 0.1f) + currentGear * 0.1f;
 	}

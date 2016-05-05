@@ -1,3 +1,6 @@
+// Upgrade NOTE: replaced 'PositionFog()' with multiply of UNITY_MATRIX_MVP by position
+// Upgrade NOTE: replaced 'V2F_POS_FOG' with 'float4 pos : SV_POSITION'
+
 Shader "Lightmapped/Diffuse Detail" {
 Properties {
 	_Color ("Main Color", Color) = (1,1,1,1)
@@ -13,13 +16,14 @@ Properties {
 Category {
 	Tags { "RenderType"="Opaque" }
 	LOD 250
-	Blend AppSrcAdd AppDstAdd
+	/* Upgrade NOTE: commented out, possibly part of old style per-pixel lighting: Blend AppSrcAdd AppDstAdd */
 	Fog { Color [_AddFog] }
 		
 	// ------------------------------------------------------------------
 	// ARB fragment program
 	
-	SubShader {
+	#warning Upgrade NOTE: SubShader commented out; uses Unity 2.x per-pixel lighting. You should rewrite shader into a Surface Shader.
+/*SubShader {
 		Tags { "RenderType"="Opaque" }
 	//	UsePass "Lightmapped/VertexLit Detail/BASE"
 
@@ -28,6 +32,8 @@ Category {
 			Name "PPL"
 			Tags { "LightMode" = "Pixel" }
 CGPROGRAM
+// Upgrade NOTE: excluded shader from DX11 and Xbox360; has structs without semantics (struct v2f members uv,viewDirT,lightDirT,shininess)
+#pragma exclude_renderers d3d11 xbox360
 #pragma vertex vert
 #pragma fragment frag
 #pragma multi_compile_builtin
@@ -45,7 +51,7 @@ struct appdata_lightmap {
 };
 
 struct v2f {
-	V2F_POS_FOG;
+	float4 pos : SV_POSITION;
 	LIGHTING_COORDS
 	float2	uv[3];
 	float3	viewDirT;
@@ -59,7 +65,7 @@ uniform float _Shininess;
 v2f vert (appdata_lightmap v)
 {
 	v2f o;
-	PositionFog( v.vertex, o.pos, o.fog );
+	o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
 	o.uv[0] = TRANSFORM_TEX(v.texcoord,_MainTex);
 	o.uv[1] = TRANSFORM_TEX(v.texcoord,_Detail);
 	o.uv[2] = TRANSFORM_TEX(v.texcoord1,_LightMap);
@@ -114,7 +120,7 @@ half4 frag (v2f i) : COLOR
 } 
 ENDCG
 		}
-	}
+	}*/
 }
 
 Fallback "Lightmapped/VertexLit", 1

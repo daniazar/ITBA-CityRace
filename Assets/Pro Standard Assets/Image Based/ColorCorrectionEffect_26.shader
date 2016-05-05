@@ -4,7 +4,8 @@ Properties {
 	_RampTex ("Base (RGB)", 2D) = "grayscaleRamp" {}
 }
 
-SubShader {
+#warning Upgrade NOTE: SubShader commented out because of manual shader assembly
+/*SubShader {
 	Pass {
 		ZTest Always Cull Off ZWrite Off
 		Fog { Mode off }
@@ -142,7 +143,7 @@ mov oC0, r0
 
 
 	}
-}
+}*/
 
 Fallback off
 

@@ -10,7 +10,7 @@ Properties {
 Category {
 	Tags { "RenderType"="Opaque" }
 	LOD 250
-	Blend AppSrcAdd AppDstAdd
+	/* Upgrade NOTE: commented out, possibly part of old style per-pixel lighting: Blend AppSrcAdd AppDstAdd */
 	Fog { Color [_AddFog] }
 		
 	// ------------------------------------------------------------------
@@ -21,7 +21,7 @@ Category {
 		// Ambient pass
 		Pass {
 			Name "BASE"
-			Tags {"LightMode" = "PixelOrNone"}
+			Tags {"LightMode" = "Always" /* Upgrade NOTE: changed from PixelOrNone to Always */}
 			Color [_PPLAmbient]
 			ColorMask RGB
  			Blend SrcAlpha OneMinusSrcAlpha

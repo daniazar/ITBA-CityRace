@@ -1,3 +1,7 @@
+// Upgrade NOTE: replaced 'PositionFog()' with multiply of UNITY_MATRIX_MVP by position
+// Upgrade NOTE: replaced 'V2F_POS_FOG' with 'float4 pos : SV_POSITION'
+// Upgrade NOTE: replaced '_PPLAmbient' with 'UNITY_LIGHTMODEL_AMBIENT'
+
 Shader "Car new/Car diffusebumpfresnelreflect2D" {
 Properties {
 	_Color ("Main Color", Color) = (1,1,1,0)
@@ -23,12 +27,15 @@ Properties {
 }
 
 // ---- fragment program cards: everything
-SubShader { 
+#warning Upgrade NOTE: SubShader commented out; uses Unity 2.x per-pixel lighting. You should rewrite shader into a Surface Shader.
+/*SubShader { 
 	Pass {
 		Name "PPL"	
 
 		Tags { "LightMode"="Pixel"}
 CGPROGRAM
+// Upgrade NOTE: excluded shader from DX11 and Xbox360; has structs without semantics (struct v2f members uv,viewDirT,lightDirT)
+#pragma exclude_renderers d3d11 xbox360
 #pragma vertex vert
 #pragma fragment frag
 #pragma multi_compile_builtin
@@ -40,7 +47,7 @@ CGPROGRAM
 
 
 struct v2f {
-	V2F_POS_FOG;
+	float4 pos : SV_POSITION;
 	LIGHTING_COORDS
 	float2	uv[4];
 	float3	viewDirT;
@@ -64,7 +71,7 @@ uniform matrix _LightmapMatrix;
 v2f vert (appdata_tan2 v)
 {	
 	v2f o;
-	PositionFog( v.vertex, o.pos, o.fog );
+	o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
 	o.uv[0] = TRANSFORM_TEX( v.texcoord, _MainTex );
 	o.uv[1] = TRANSFORM_TEX( v.texcoord, _BumpMap );
 	o.uv[2] = TRANSFORM_TEX( v.texcoord, _SparkleTex );
@@ -123,7 +130,7 @@ float4 frag (v2f i)  : COLOR
 	duotone +=  _ModelLightColor0 * mainColor;
 	
 	duotone *= d * 2; 
-	duotone += mainColor * (_PPLAmbient + lightMap);
+	duotone += mainColor * (UNITY_LIGHTMODEL_AMBIENT + lightMap);
 	half4 c =  half4(duotone.rgb, light + _ReflectInShadow );
 
 	return c;
@@ -138,6 +145,8 @@ ENDCG
 //		Blend DstAlpha One
 		Blend One One
 CGPROGRAM
+// Upgrade NOTE: excluded shader from DX11 and Xbox360; has structs without semantics (struct v2f members uv,viewDir,TtoW0,TtoW1,TtoW2)
+#pragma exclude_renderers d3d11 xbox360
 #pragma vertex vert
 #pragma fragment frag
 #pragma fragmentoption ARB_fog_exp2
@@ -147,7 +156,7 @@ CGPROGRAM
 #include "AutoLight.cginc" 
 
 struct v2f {
-	V2F_POS_FOG;
+	float4 pos : SV_POSITION;
 	float2	uv[2];
 	float3	viewDir;
 	float3	TtoW0;
@@ -170,7 +179,7 @@ uniform float4 _BumpMap_ST;
 v2f vert (appdata_tan2 v)
 {	
 	v2f o;
-	PositionFog( v.vertex, o.pos, o.fog );
+	o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
 	o.uv[0] = TRANSFORM_TEX( v.texcoord, _MainTex );
 	o.uv[1] = TRANSFORM_TEX( v.texcoord, _BumpMap );
 	
@@ -226,7 +235,7 @@ ENDCG
 	}
 		
 	
-}
+}*/
 FallBack  "Reflective/Bumped Specular", 0
 
 }

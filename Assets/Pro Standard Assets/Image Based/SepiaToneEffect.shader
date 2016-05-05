@@ -1,3 +1,6 @@
+// Upgrade NOTE: replaced 'samplerRECT' with 'sampler2D'
+// Upgrade NOTE: replaced 'texRECT' with 'tex2D'
+
 Shader "Hidden/Sepiatone Effect" {
 Properties {
 	_MainTex ("Base (RGB)", RECT) = "white" {}
@@ -14,11 +17,11 @@ CGPROGRAM
 #pragma fragmentoption ARB_precision_hint_fastest 
 #include "UnityCG.cginc"
 
-uniform samplerRECT _MainTex;
+uniform sampler2D _MainTex;
 
 float4 frag (v2f_img i) : COLOR
 {	
-	float4 original = texRECT(_MainTex, i.uv);
+	float4 original = tex2D(_MainTex, i.uv);
 	
 	// get intensity value (Y part of YIQ color space)
 	float Y = dot (float3(0.299, 0.587, 0.114), original.rgb);

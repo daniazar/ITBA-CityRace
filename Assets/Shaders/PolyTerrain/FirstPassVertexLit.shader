@@ -41,7 +41,8 @@ Category {
  	}
  	
  	// ATI texture shader, 4 splats per pass
-	SubShader {		
+	#warning Upgrade NOTE: SubShader commented out because of manual shader assembly
+/*SubShader {		
 		Tags {
 			"SplatCount" = "4"
 			"Queue" = "Geometry-100"
@@ -85,7 +86,7 @@ EndPass;
 			SetTexture [_Splat3] 
 			SetTexture [_Control]
 		}
- 	}
+ 	}*/
 }
 
 // Fallback to base map	

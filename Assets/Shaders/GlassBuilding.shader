@@ -1,3 +1,6 @@
+// Upgrade NOTE: replaced 'PositionFog()' with multiply of UNITY_MATRIX_MVP by position
+// Upgrade NOTE: replaced 'V2F_POS_FOG' with 'float4 pos : SV_POSITION'
+
 Shader "Building/Glass" {
 Properties {
 	_Lightmap ("Lightmap (RGB) Reflectiveness (A)", 2D) = "black" {}
@@ -16,6 +19,8 @@ Category {
 		Pass {
 			
 CGPROGRAM
+// Upgrade NOTE: excluded shader from DX11 and Xbox360; has structs without semantics (struct v2f members normal,viewDir,rotNormal,uv)
+#pragma exclude_renderers d3d11 xbox360
 #pragma vertex vert
 #pragma fragment frag
 #pragma fragmentoption ARB_fog_exp2
@@ -23,7 +28,7 @@ CGPROGRAM
 #include "UnityCG.cginc"
 
 struct v2f {
-	V2F_POS_FOG;
+	float4 pos : SV_POSITION;
 	float3  normal;
 	float3	viewDir;
 	float3	rotNormal;
@@ -36,7 +41,7 @@ uniform float4 _Lightmap_ST;
 v2f vert (appdata_tan v)
 {	
 	v2f o;
-	PositionFog( v.vertex, o.pos, o.fog );
+	o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
 	o.normal = mul( (float3x3)_Object2World, v.normal );
 	o.rotNormal = mul( (float3x3)_RotMatrix, o.normal );
 	o.viewDir = mul( (float3x3)_Object2World, ObjSpaceViewDir(v.vertex) );

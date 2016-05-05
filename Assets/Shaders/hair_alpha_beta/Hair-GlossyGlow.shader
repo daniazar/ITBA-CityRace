@@ -9,14 +9,15 @@ Properties {
 }
 
 Category { 
-	Blend AppSrcAdd AppDstAdd
+	/* Upgrade NOTE: commented out, possibly part of old style per-pixel lighting: Blend AppSrcAdd AppDstAdd */
 
 	Fog { Color [_AddFog] }
 	
 	// ------------------------------------------------------------------
 	// ARB fragment program
 	
-	SubShader {
+	#warning Upgrade NOTE: SubShader commented out; uses Unity 2.x style fixed function per-pixel lighting. Per-pixel lighting is not supported without shaders anymore.
+/*SubShader {
 
 		UsePass "Hair/Specular/BASE"
 		UsePass "Hair/Specular/BASEBLEND"
@@ -76,7 +77,7 @@ CGPROGRAM
 
 ENDCG
 		}
-	}
+	}*/
 
 }
 

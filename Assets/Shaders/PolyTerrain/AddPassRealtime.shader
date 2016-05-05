@@ -8,7 +8,8 @@ Properties {
 	_Splat0 ("Layer 0 (R)", 2D) = "white" {}
 }
 	
-SubShader {		
+#warning Upgrade NOTE: SubShader commented out; uses Unity 2.x style fixed function per-pixel lighting. Per-pixel lighting is not supported without shaders anymore.
+/*SubShader {		
 	Tags {
 		"SplatCount" = "4"
 		"Queue" = "Geometry-99"
@@ -22,7 +23,7 @@ SubShader {
 	
 	// Ambient pass
 	Pass {
-		Tags { "LightMode" = "PixelOrNone" }
+		Tags { "LightMode" = "Always" /* Upgrade NOTE: changed from PixelOrNone to Always */ }
 		
 		CGPROGRAM
 		#pragma vertex AmbientSplatVertex
@@ -65,7 +66,7 @@ SubShader {
 		#include "polysplatting.cginc"
 		ENDCG
 	}
-}
+}*/
  	
 // Fallback to VertexLit
 Fallback "PolyTerrain/Splatmap/Vertexlit-AddPass"

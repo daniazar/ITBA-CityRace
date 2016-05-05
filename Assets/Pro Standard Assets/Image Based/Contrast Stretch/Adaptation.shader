@@ -1,3 +1,6 @@
+// Upgrade NOTE: replaced 'samplerRECT' with 'sampler2D'
+// Upgrade NOTE: replaced 'texRECT' with 'tex2D'
+
 // Calculates adaptation to minimum/maximum luminance values,
 // based on "currently adapted" and "new values to adapt to"
 // textures (both 1x1).
@@ -20,14 +23,14 @@ CGPROGRAM
 #pragma fragmentoption ARB_precision_hint_fastest 
 #include "UnityCG.cginc"
 
-uniform samplerRECT _MainTex; // currently adapted to
-uniform samplerRECT _CurTex; // new value to adapt to
+uniform sampler2D _MainTex; // currently adapted to
+uniform sampler2D _CurTex; // new value to adapt to
 uniform float4 _AdaptParams; // x=adaptLerp, y=limitMinimum, z=limitMaximum
 
 float4 frag (v2f_img i) : COLOR  {
 	// value is: max, min
-	float2 valAdapted = texRECT(_MainTex, i.uv).xy;
-	float2 valCur = texRECT(_CurTex, i.uv).xy;
+	float2 valAdapted = tex2D(_MainTex, i.uv).xy;
+	float2 valCur = tex2D(_CurTex, i.uv).xy;
 	
 	// Calculate new adapted values: interpolate
 	// from valAdapted to valCur by script-supplied amount.

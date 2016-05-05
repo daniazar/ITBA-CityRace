@@ -1,3 +1,8 @@
+// Upgrade NOTE: replaced 'glstate.matrix.mvp' with 'UNITY_MATRIX_MVP'
+// Upgrade NOTE: replaced 'glstate.matrix.texture[0]' with 'UNITY_MATRIX_TEXTURE0'
+// Upgrade NOTE: replaced 'samplerRECT' with 'sampler2D'
+// Upgrade NOTE: replaced 'texRECT' with 'tex2D'
+
 Shader "Hidden/Twist Effect" {
 Properties {
 	_MainTex ("Base (RGB)", RECT) = "white" {}
@@ -17,7 +22,7 @@ CGPROGRAM
 
 #include "UnityCG.cginc"
 
-uniform samplerRECT _MainTex;
+uniform sampler2D _MainTex;
 uniform float4 _MainTex_TexelSize;
 uniform float _Angle;
 uniform float4 _CenterRadius;
@@ -31,9 +36,9 @@ struct v2f {
 v2f vert (appdata_img v)
 {
 	v2f o;
-	o.pos = mul (glstate.matrix.mvp, v.vertex);
+	o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
 	float2 uv = v.texcoord.xy - _CenterRadius.xy;
-	o.uv = MultiplyUV (glstate.matrix.texture[0], uv);
+	o.uv = MultiplyUV (UNITY_MATRIX_TEXTURE0, uv);
 	o.uvOrig = uv;
 	return o;
 }
@@ -56,7 +61,7 @@ float4 frag (v2f i) : COLOR
 	uv *= _MainTex_TexelSize.zw;
 	#endif	
 	
-	return texRECT(_MainTex, uv);
+	return tex2D(_MainTex, uv);
 }
 ENDCG
 
